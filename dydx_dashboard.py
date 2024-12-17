@@ -77,7 +77,7 @@ st.markdown("A first metric that we can show is the total daily order book discr
 st.text("")
 st.bar_chart(prepare_chart_data(combined_data['date'], combined_data['Order Book Discrepancy ($)']))
 
-fig1 = px.bar(combined_data, x="date", y="Order Book Discrepancy ($)'", color_discrete_sequence=px.colors.qualitative.Pastel2)
+fig1 = px.bar(combined_data, x="date", y="Order Book Discrepancy ($)", color_discrete_sequence=px.colors.qualitative.Pastel2)
 fig1.update_layout(
     title="Daily Discrepancy",
     xaxis_title="Date",
