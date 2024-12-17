@@ -75,8 +75,6 @@ st.subheader("Daily Discrepancy")
 st.text("")
 st.markdown("A first metric that we can show is the total daily order book discrepancy.")
 st.text("")
-st.bar_chart(prepare_chart_data(combined_data['date'], combined_data['Order Book Discrepancy ($)']))
-
 fig1 = px.bar(combined_data, x="date", y="Order Book Discrepancy ($)", color_discrete_sequence=px.colors.qualitative.Pastel2)
 fig1.update_layout(
     title="Daily Discrepancy",
@@ -94,23 +92,56 @@ st.plotly_chart(fig1, theme="streamlit", use_container_width=True)
 st.subheader("Daily Volume")
 st.text("")
 st.markdown("If we compare discrepancy to total daily volume, we can already see that it matches, which might make sense after all. For reference, this data is pulled directly from Numia`s data lenses tool.")
-st.text("")
-st.bar_chart(prepare_chart_data(combined_data['date'], combined_data['total_volume']))
+st.text("") 
+fig2 = px.bar(combined_data, x="date", y="total_volume", color_discrete_sequence=px.colors.qualitative.Pastel2)
+fig2.update_layout(
+    title="Daily Volume",
+    xaxis_title="Date",
+    yaxis_title="Volume ($)", 
+    xaxis_tickfont_size=14,
+    yaxis_tickfont_size=14,
+    bargap=0.15, # gap between bars of adjacent location coordinates.
+    bargroupgap=0.1 # gap between bars of the same location coordinate.
+    )
+st.plotly_chart(fig2, theme="streamlit", use_container_width=True)
+   
+
 
 
 st.subheader("Ratio: Discrepancy / Volume (in percentage)")
 st.text("")
 st.markdown("Now that we have both daily volume and daily discrepancy, we can calculate the ratio discrepancy over volume in a daily basis, and we see that it doesn't fluctuate much, except for some higher peaks.")
-st.text("")
-st.line_chart(prepare_chart_data(combined_data['date'], combined_data['ratio']))
-
+st.text("") 
+fig3 = px.bar(combined_data, x="date", y="ratio", color_discrete_sequence=px.colors.qualitative.Pastel2)
+fig3.update_layout(
+    title="Daily ratio discrepancy over volume (percentage)",
+    xaxis_title="Date",
+    yaxis_title="Ratio discrepancy/volume (percentage)", 
+    xaxis_tickfont_size=14,
+    yaxis_tickfont_size=14,
+    bargap=0.15, # gap between bars of adjacent location coordinates.
+    bargroupgap=0.1 # gap between bars of the same location coordinate.
+    )
+st.plotly_chart(fig3, theme="streamlit", use_container_width=True)
+   
 
 st.subheader("Daily Orders Created")
 st.text("")
 st.markdown("In an attempt to look at additional insights, we have also decided to plot daily number of orders created.")
 st.text("")
 st.bar_chart(prepare_chart_data(open_orders_data['date'], open_orders_data['NUM_ORDERS']))
- 
+fig4 = px.bar(combined_data, x="date", y="NUM_ORDERS", color_discrete_sequence=px.colors.qualitative.Pastel2)
+fig4.update_layout(
+    title="Daily number of orders created",
+    xaxis_title="Date",
+    yaxis_title="Number of orders created", 
+    xaxis_tickfont_size=14,
+    yaxis_tickfont_size=14,
+    bargap=0.15, # gap between bars of adjacent location coordinates.
+    bargroupgap=0.1 # gap between bars of the same location coordinate.
+    )
+st.plotly_chart(fig4, theme="streamlit", use_container_width=True)
+    
 
 
 # Function to load validator data
