@@ -93,3 +93,54 @@ plot_data = df.pivot_table(
 
 st.subheader("7-Day Rolling Average Empty Block Percentage by Validator")
 st.line_chart(plot_data)
+
+def get_sorted_validators(df, column):
+        last_values = df.groupby('moniker').apply(lambda x: x.sort_values('time').iloc[-1][column])
+        sorted_validators = last_values.sort_values(ascending=False).index.tolist()
+        return sorted_validators
+
+url = "https://drive.google.com/uc?id=1kv6gzzwd4tKz-PMfdvyadJWgYv5vnl4r"
+output = 'mev_filtered_blocks_with_vp.csv'
+gdown.download(url, output, quiet=False) 
+df = pd.read_csv(output)
+
+for category in ['2.5-100%', '1-2.5%', '0-1%']:
+    df_category = df[df['Voting Power Category'] == category]
+
+    # Sort validators by their last 7-day MA value
+    sorted_validators_7day = get_sorted_validators(df_category, 'mev_7day')
+
+    # Create a figure for the 7-day moving average
+    fig_7day = go.Figure()
+
+    for validator in sorted_validators_7day:
+        df_val = df_category[df_category['moniker'] == validator]
+
+        fig_7day.add_trace(go.Scatter(
+            x=df_val.index, 
+            y=df_val['mev_7day'], 
+            mode='lines', 
+            name=f'{validator} 7-day MA',
+            hoverinfo='x+y+name',  # Show only the date, discrepancy value, and validator name on hover
+            line=dict(width=2),
+            text=[f'{validator}<br>Discrepancy: {val:.2f}' for val in df_val['mev_7day']]
+        ))
+
+        # Update layout for the 7-day moving average
+    fig_7day.update_layout(
+        title=f'Average 7-day MA order book discrepancy per block for validators with voting power between {category}',
+        xaxis_title='Time',
+        yaxis_title='Order Book Discrepancy ($)',
+        hovermode="closest",  # Show info for the nearest line only
+        legend_title='Validators',
+        template='plotly_white',
+        height=800
+    )
+
+    # Show the interactive plot for 7-day MA
+    st.plotly_chart(fig_7day, theme="streamlit", use_container_width=True)
+
+
+
+
+
