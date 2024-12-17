@@ -5,3 +5,4 @@ watchdog
 shroomdk
 seaborn
 plotly
+gdown
