@@ -128,9 +128,8 @@ st.plotly_chart(fig3, theme="streamlit", use_container_width=True)
 st.subheader("Daily Orders Created")
 st.text("")
 st.markdown("In an attempt to look at additional insights, we have also decided to plot daily number of orders created.")
-st.text("")
-st.bar_chart(prepare_chart_data(open_orders_data['date'], open_orders_data['NUM_ORDERS']))
-fig4 = px.bar(combined_data, x="date", y="NUM_ORDERS", color_discrete_sequence=px.colors.qualitative.Pastel2)
+st.text("") 
+fig4 = px.bar(open_orders_data, x="date", y="NUM_ORDERS", color_discrete_sequence=px.colors.qualitative.Pastel2)
 fig4.update_layout(
     title="Daily number of orders created",
     xaxis_title="Date",
