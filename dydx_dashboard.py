@@ -162,15 +162,40 @@ df['block_date'] = pd.to_datetime(df['block_date'])
 df['rolling_7day_avg_empty_block_pct'] = df.groupby('validator_moniker')['empty_block_pct'].transform(lambda x: x.rolling(window=7).mean() * 100)
 
 validator_chart_data = df[['block_date', 'rolling_7day_avg_empty_block_pct', 'moniker']].dropna()
-plot_data = df.pivot_table(
-    index='block_date', 
-    columns='moniker', 
-    values='rolling_7day_avg_empty_block_pct'
+validator_chart_data_long = validator_chart_data.melt(
+    id_vars=["block_date"], 
+    value_vars=["rolling_7day_avg_empty_block_pct"], 
+    var_name="Metric", 
+    value_name="Percentage"
 )
 
+# Create the line chart using Plotly Express
+fig5 = px.line(
+    validator_chart_data, 
+    x="block_date", 
+    y="rolling_7day_avg_empty_block_pct", 
+    color="moniker",
+    title="7-Day Rolling Average Empty Block Percentage by Validator",
+    labels={
+        "block_date": "Block Date", 
+        "rolling_7day_avg_empty_block_pct": "Empty Block Percentage (%)",
+        "moniker": "Validator"
+    },
+    color_discrete_sequence=px.colors.qualitative.Pastel
+)
 
-st.subheader("7-Day Rolling Average Empty Block Percentage by Validator")
-st.line_chart(plot_data)
+# Customize the layout
+fig5.update_layout(
+    xaxis_title="Date",
+    yaxis_title="7-Day Rolling Average (%)",
+    legend_title="Validator",
+    xaxis_tickfont_size=12,
+    yaxis_tickfont_size=12,
+    margin=dict(l=40, r=40, t=40, b=40),
+    hovermode="x unified"
+)
+
+st.plotly_chart(fig5, theme="streamlit", use_container_width=True)
 
 
 
