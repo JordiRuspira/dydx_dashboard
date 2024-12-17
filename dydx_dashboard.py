@@ -2,6 +2,15 @@ import streamlit as st
 import pandas as pd
 import requests
 import gdown
+import plotly.io as pio
+import seaborn as sns
+import matplotlib.pyplot as plt
+import matplotlib.dates as md
+import matplotlib.ticker as ticker
+import numpy as np
+import plotly.express as px
+
+
 
 # Helper function for preparing data for Streamlit charts
 def prepare_chart_data(x, y):
@@ -67,6 +76,20 @@ st.text("")
 st.markdown("A first metric that we can show is the total daily order book discrepancy.")
 st.text("")
 st.bar_chart(prepare_chart_data(combined_data['date'], combined_data['Order Book Discrepancy ($)']))
+
+fig1 = px.bar(combined_data, x="date", y="Order Book Discrepancy ($)'", color_discrete_sequence=px.colors.qualitative.Pastel2)
+    fig1.update_layout(
+    title="Daily Discrepancy",
+    xaxis_title="Date",
+    yaxis_title="Order book discrepancy ($)", 
+    xaxis_tickfont_size=14,
+    yaxis_tickfont_size=14,
+    bargap=0.15, # gap between bars of adjacent location coordinates.
+    bargroupgap=0.1 # gap between bars of the same location coordinate.
+    )
+st.plotly_chart(fig1, theme="streamlit", use_container_width=True)
+   
+
 
 st.subheader("Daily Volume")
 st.text("")
