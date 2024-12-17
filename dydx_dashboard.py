@@ -1,14 +1,20 @@
 import streamlit as st
 import pandas as pd
 import requests
+import gdown
 
 # Helper function for preparing data for Streamlit charts
 def prepare_chart_data(x, y):
     return pd.DataFrame({'Date': x, 'Value': y}).set_index('Date')
 
 # Function to load and preprocess MEV data
-def load_mev_data():
-    mev_df = pd.read_csv('filtered_mev_data_with_dates.csv')
+def load_mev_data():  
+    #url = "https://drive.google.com/file/d/1f1pfLkNqbwiypDbyWZkHZO12D-_znYq0/view?usp=drive_link"
+    url = "https://drive.google.com/uc?id=1f1pfLkNqbwiypDbyWZkHZO12D-_znYq0"
+    output = 'filtered_mev_data_with_dates.csv'
+    gdown.download(url, output, quiet=False)
+    # Load into DataFrame
+    mev_df = pd.read_csv(output)
     mev_df['date'] = pd.to_datetime(mev_df['date'], utc=True).dt.date
     mev_df = mev_df.dropna(subset=['date'])
     daily_aggregated = mev_df.groupby('date')['Order Book Discrepancy ($)'].sum().reset_index()
