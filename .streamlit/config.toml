@@ -1,6 +1,6 @@
 [theme]
-primaryColor = "#6A8EAE"                 # Darker pastel blue for primary elements
-backgroundColor = "#E6F0F5"              # Light pastel blue for the background
-secondaryBackgroundColor = "#A3B8CC"     # Medium pastel blue for secondary areas
-textColor = "#2C3E50"                   # Darker blue for text to ensure readability
+primaryColor = "#A7C080"                 # Soft pastel green for primary elements (buttons, highlights)
+backgroundColor = "#2D353B"              # Dark grayish-green background
+secondaryBackgroundColor = "#3A454A"     # Slightly lighter grayish-green for contrast sections
+textColor = "#D3C6AA"                   # Warm off-white for text
 font = "sans serif"
