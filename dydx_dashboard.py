@@ -47,7 +47,13 @@ def load_open_orders():
 
 # Streamlit setup
 st.set_page_config(page_title="MEV Data Dashboard", layout="wide")
-st.title("MEV Data Analysis Dashboard")
+st.title("MEV Data Analysis Dashboard") 
+st.text("")
+st.markdown("This dashboard is maintained by the dYdX MEV Committee and the data is refereshed weekly, the reason being that most of it is both extracted from Numia and calculations are made on top of that ad-hoc (we will list the exact scripts for the community to scrutinize), and if it was to be done on each dashboard refresh, it would take too long to load.")
+st.text("")
+st.markdown("As part of our work in the MEV Committee, we believe that having a weekly refreshed dashboard can help users keep track of the work and see insights as well. Individual block discrepancies are analyzed using methods mentioned in previous reports. The goal here is to have also a historical view of what's been happening so far.")
+st.text("")
+
 
 # Load data
 mev_data = load_mev_data()
@@ -57,16 +63,32 @@ open_orders_data = load_open_orders()
 
 # Create charts using Streamlit
 st.subheader("Daily Discrepancy")
+st.text("")
+st.markdown("A first metric that we can show is the total daily order book discrepancy.")
+st.text("")
 st.bar_chart(prepare_chart_data(combined_data['date'], combined_data['Order Book Discrepancy ($)']))
 
-st.subheader("Daily Orders Created")
-st.bar_chart(prepare_chart_data(open_orders_data['date'], open_orders_data['NUM_ORDERS']))
-
 st.subheader("Daily Volume")
+st.text("")
+st.markdown("If we compare discrepancy to total daily volume, we can already see that it matches, which might make sense after all. For reference, this data is pulled directly from Numia`s data lenses tool.")
+st.text("")
 st.bar_chart(prepare_chart_data(combined_data['date'], combined_data['total_volume']))
 
-st.subheader("Ratio: Discrepancy / Volume")
+
+st.subheader("Ratio: Discrepancy / Volume (in percentage)")
+st.text("")
+st.markdown("Now that we have both daily volume and daily discrepancy, we can calculate the ratio discrepancy over volume in a daily basis, and we see that it doesn't fluctuate much, except for some higher peaks.")
+st.text("")
 st.line_chart(prepare_chart_data(combined_data['date'], combined_data['ratio']))
+
+
+st.subheader("Daily Orders Created")
+st.text("")
+st.markdown("In an attempt to look at additional insights, we have also decided to plot daily number of orders created.")
+st.text("")
+st.bar_chart(prepare_chart_data(open_orders_data['date'], open_orders_data['NUM_ORDERS']))
+ 
+
 
 # Function to load validator data
 def get_validator_data():
@@ -77,6 +99,9 @@ def get_validator_data():
 
 # Visualize 7-day rolling average of empty block percentages for validators
 st.subheader("Top Validators: 7-Day Rolling Average Empty Block Percentage")
+st.text("")
+st.markdown("As the committee has highlighted in the last reports, we believe that a key indicator so far to look at performance of nodes is the number of empty blocks that they have proposed (i.e. number of blocks with no matches) compared to the otehr nodes.")
+st.text("")
 df = pd.read_csv('empty_blocks_2.csv')
 validator_df = get_validator_data()
 df = df.merge(validator_df[['pubkey', 'moniker']], left_on='validator_moniker', right_on='pubkey', how='left')
@@ -93,54 +118,6 @@ plot_data = df.pivot_table(
 
 st.subheader("7-Day Rolling Average Empty Block Percentage by Validator")
 st.line_chart(plot_data)
-
-def get_sorted_validators(df, column):
-        last_values = df.groupby('moniker').apply(lambda x: x.sort_values('time').iloc[-1][column])
-        sorted_validators = last_values.sort_values(ascending=False).index.tolist()
-        return sorted_validators
-
-url = "https://drive.google.com/uc?id=1kv6gzzwd4tKz-PMfdvyadJWgYv5vnl4r"
-output = 'mev_filtered_blocks_with_vp.csv'
-gdown.download(url, output, quiet=False) 
-df = pd.read_csv(output)
-
-for category in ['2.5-100%', '1-2.5%', '0-1%']:
-    df_category = df[df['Voting Power Category'] == category]
-
-    # Sort validators by their last 7-day MA value
-    sorted_validators_7day = get_sorted_validators(df_category, 'mev_7day')
-
-    # Create a figure for the 7-day moving average
-    fig_7day = go.Figure()
-
-    for validator in sorted_validators_7day:
-        df_val = df_category[df_category['moniker'] == validator]
-
-        fig_7day.add_trace(go.Scatter(
-            x=df_val.index, 
-            y=df_val['mev_7day'], 
-            mode='lines', 
-            name=f'{validator} 7-day MA',
-            hoverinfo='x+y+name',  # Show only the date, discrepancy value, and validator name on hover
-            line=dict(width=2),
-            text=[f'{validator}<br>Discrepancy: {val:.2f}' for val in df_val['mev_7day']]
-        ))
-
-        # Update layout for the 7-day moving average
-    fig_7day.update_layout(
-        title=f'Average 7-day MA order book discrepancy per block for validators with voting power between {category}',
-        xaxis_title='Time',
-        yaxis_title='Order Book Discrepancy ($)',
-        hovermode="closest",  # Show info for the nearest line only
-        legend_title='Validators',
-        template='plotly_white',
-        height=800
-    )
-
-    # Show the interactive plot for 7-day MA
-    st.plotly_chart(fig_7day, theme="streamlit", use_container_width=True)
-
-
 
 
 
