@@ -11,6 +11,7 @@ import numpy as np
 import plotly.express as px
 
 
+blue_pastel_palette = ['#A2C3E6', '#B8D4EF', '#CDE3F5', '#E0F1FB', '#8FB3D9']
 
 # Helper function for preparing data for Streamlit charts
 def prepare_chart_data(x, y):
@@ -75,7 +76,7 @@ st.subheader("Daily Discrepancy")
 st.text("")
 st.markdown("A first metric that we can show is the total daily order book discrepancy.")
 st.text("")
-fig1 = px.bar(combined_data, x="date", y="Order Book Discrepancy ($)", color_discrete_sequence=px.colors.qualitative.Pastel2)
+fig1 = px.bar(combined_data, x="date", y="Order Book Discrepancy ($)", color_discrete_sequence=blue_pastel_palette)
 fig1.update_layout(
     title="Daily Discrepancy",
     xaxis_title="Date",
