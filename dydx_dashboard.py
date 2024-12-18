@@ -199,10 +199,49 @@ fig5.update_layout(
 st.plotly_chart(fig5, theme="streamlit", use_container_width=True)
 
 
+df_movingavg = pd.read_csv('mev_filtered_blocks_with_vp_date_new.csv')
 
+# Function to get sorted validators by their last moving average value
+def get_sorted_validators(df, column):
+    last_values = df.groupby('moniker').apply(lambda x: x.sort_values('date').iloc[-1][column])
+    sorted_validators = last_values.sort_values(ascending=False).index.tolist()
+    return sorted_validators
 
+# Sort validators by their last 7-day MA value
+# Load and process moving average data
+df_movingavg = pd.read_csv('mev_filtered_blocks_with_vp_date_new.csv')
 
+st.subheader("Average 7-day Moving Average Order Book Discrepancy")
+st.text("")
+st.markdown("This chart shows the 7-day moving average of order book discrepancy per block for each validator over time.")
+st.text("")
 
+# Create the line chart using Plotly Express
+fig7 = px.line(
+    df_movingavg, 
+    x="date", 
+    y="mev_7day",
+    color="moniker",
+    title="7-day Moving Average Order Book Discrepancy per Block by Validator",
+    labels={
+        "date": "Date",
+        "mev_7day": "Order Book Discrepancy ($)",
+        "moniker": "Validator"
+    },
+    color_discrete_sequence=px.colors.qualitative.Pastel
+)
 
+# Update layout to match other charts
+fig7.update_layout(
+    xaxis_title="Date",
+    yaxis_title="Order Book Discrepancy ($)",
+    legend_title="Validator",
+    xaxis_tickfont_size=14,
+    yaxis_tickfont_size=14,
+    margin=dict(l=40, r=40, t=40, b=40),
+    hovermode="x unified"
+)
+
+st.plotly_chart(fig7, theme="streamlit", use_container_width=True)
 
 
