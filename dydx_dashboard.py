@@ -245,3 +245,105 @@ fig7.update_layout(
 st.plotly_chart(fig7, theme="streamlit", use_container_width=True)
 
 
+# Add validator comparison section
+st.subheader("Validator Comparison")
+st.text("")
+st.markdown("Compare a selected validator's performance against the average of all other validators.")
+st.text("")
+
+# Get unique validator names for the selector
+validators = sorted(df['moniker'].unique())
+
+# Create validator selector
+selected_validator = st.selectbox(
+    "Select a validator to compare",
+    validators
+)
+
+# Process empty blocks data for comparison
+def prepare_empty_blocks_comparison(df, selected_validator):
+    # Selected validator data
+    selected_data = df[df['moniker'] == selected_validator]
+    
+    # Others average data
+    others_data = df[df['moniker'] != selected_validator].groupby('block_date')['rolling_7day_avg_empty_block_pct'].mean().reset_index()
+    
+    return selected_data, others_data
+
+# Process MEV data for comparison
+def prepare_mev_comparison(df, selected_validator):
+    # Selected validator data
+    selected_data = df[df['moniker'] == selected_validator]
+    
+    # Others average data
+    others_data = df[df['moniker'] != selected_validator].groupby('date')['mev_7day'].mean().reset_index()
+    
+    return selected_data, others_data
+
+# Prepare comparison data
+empty_blocks_selected, empty_blocks_others = prepare_empty_blocks_comparison(validator_chart_data, selected_validator)
+mev_selected, mev_others = prepare_mev_comparison(df_movingavg, selected_validator)
+
+# Create empty blocks comparison chart
+fig_empty_compare = px.line(
+    title=f"Empty Blocks: {selected_validator} vs Average of Others"
+)
+
+# Add selected validator line
+fig_empty_compare.add_scatter(
+    x=empty_blocks_selected['block_date'],
+    y=empty_blocks_selected['rolling_7day_avg_empty_block_pct'],
+    name=selected_validator,
+    line=dict(color='#A2C3E6', width=3)
+)
+
+# Add others average line
+fig_empty_compare.add_scatter(
+    x=empty_blocks_others['block_date'],
+    y=empty_blocks_others['rolling_7day_avg_empty_block_pct'],
+    name='Average of Other Validators',
+    line=dict(color='#CDE3F5', width=2, dash='dash')
+)
+
+fig_empty_compare.update_layout(
+    xaxis_title="Date",
+    yaxis_title="Empty Block Percentage (%)",
+    xaxis_tickfont_size=14,
+    yaxis_tickfont_size=14,
+    legend_title="Validator",
+    hovermode="x unified"
+)
+
+st.plotly_chart(fig_empty_compare, theme="streamlit", use_container_width=True)
+
+# Create MEV comparison chart
+fig_mev_compare = px.line(
+    title=f"Order Book Discrepancy: {selected_validator} vs Average of Others"
+)
+
+# Add selected validator line
+fig_mev_compare.add_scatter(
+    x=mev_selected['date'],
+    y=mev_selected['mev_7day'],
+    name=selected_validator,
+    line=dict(color='#A2C3E6', width=3)
+)
+
+# Add others average line
+fig_mev_compare.add_scatter(
+    x=mev_others['date'],
+    y=mev_others['mev_7day'],
+    name='Average of Other Validators',
+    line=dict(color='#CDE3F5', width=2, dash='dash')
+)
+
+fig_mev_compare.update_layout(
+    xaxis_title="Date",
+    yaxis_title="Order Book Discrepancy ($)",
+    xaxis_tickfont_size=14,
+    yaxis_tickfont_size=14,
+    legend_title="Validator",
+    hovermode="x unified"
+)
+
+st.plotly_chart(fig_mev_compare, theme="streamlit", use_container_width=True)
