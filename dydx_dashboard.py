@@ -19,8 +19,8 @@ def prepare_chart_data(x, y):
 
 # Function to load and preprocess MEV data
 def load_mev_data():  
-    #url = "https://drive.google.com/file/d/1f1pfLkNqbwiypDbyWZkHZO12D-_znYq0/view?usp=drive_link"
-    url = "https://drive.google.com/uc?id=1f1pfLkNqbwiypDbyWZkHZO12D-_znYq0"
+    #url = "https://drive.google.com/uc?id=1f1pfLkNqbwiypDbyWZkHZO12D-_znYq0"
+    url = "https://drive.google.com/uc?id=1zX3IGh6zgLz63PZLdtcJY0PtO3VMiIQu"
     output = 'filtered_mev_data_with_dates.csv'
     gdown.download(url, output, quiet=False)
     # Load into DataFrame
@@ -156,7 +156,7 @@ st.subheader("Top Validators: 7-Day Rolling Average Empty Block Percentage")
 st.text("")
 st.markdown("As the committee has highlighted in the last reports, we believe that a key indicator so far to look at performance of nodes is the number of empty blocks that they have proposed (i.e. number of blocks with no matches) compared to the otehr nodes.")
 st.text("")
-df = pd.read_csv('empty_blocks_2.csv')
+df = pd.read_csv('empty_blocks.csv')
 validator_df = get_validator_data()
 df = df.merge(validator_df[['pubkey', 'moniker']], left_on='validator_moniker', right_on='pubkey', how='left')
 df['block_date'] = pd.to_datetime(df['block_date'])
