@@ -64,7 +64,6 @@ st.text("")
 st.markdown("As part of our work in the MEV Committee, we believe that having a weekly refreshed dashboard can help users keep track of the work and see insights as well. Individual block discrepancies are analyzed using methods mentioned in previous reports. The goal here is to have also a historical view of what's been happening so far.")
 st.text("")
 
-
 # Load data
 mev_data = load_mev_data()
 volume_data = load_volume_data()
@@ -83,12 +82,10 @@ fig1.update_layout(
     yaxis_title="Order book discrepancy ($)", 
     xaxis_tickfont_size=14,
     yaxis_tickfont_size=14,
-    bargap=0.15, # gap between bars of adjacent location coordinates.
-    bargroupgap=0.1 # gap between bars of the same location coordinate.
-    )
+    bargap=0.15,
+    bargroupgap=0.1
+)
 st.plotly_chart(fig1, theme="streamlit", use_container_width=True)
-   
-
 
 st.subheader("Daily Volume")
 st.text("")
@@ -101,13 +98,10 @@ fig2.update_layout(
     yaxis_title="Volume ($)", 
     xaxis_tickfont_size=14,
     yaxis_tickfont_size=14,
-    bargap=0.15, # gap between bars of adjacent location coordinates.
-    bargroupgap=0.1 # gap between bars of the same location coordinate.
-    )
+    bargap=0.15,
+    bargroupgap=0.1
+)
 st.plotly_chart(fig2, theme="streamlit", use_container_width=True)
-   
-
-
 
 st.subheader("Ratio: Discrepancy / Volume (in percentage)")
 st.text("")
@@ -120,11 +114,10 @@ fig3.update_layout(
     yaxis_title="Ratio discrepancy/volume (percentage)", 
     xaxis_tickfont_size=14,
     yaxis_tickfont_size=14,
-    bargap=0.15, # gap between bars of adjacent location coordinates.
-    bargroupgap=0.1 # gap between bars of the same location coordinate.
-    )
+    bargap=0.15,
+    bargroupgap=0.1
+)
 st.plotly_chart(fig3, theme="streamlit", use_container_width=True)
-   
 
 st.subheader("Daily Orders Created")
 st.text("")
@@ -137,12 +130,10 @@ fig4.update_layout(
     yaxis_title="Number of orders created", 
     xaxis_tickfont_size=14,
     yaxis_tickfont_size=14,
-    bargap=0.15, # gap between bars of adjacent location coordinates.
-    bargroupgap=0.1 # gap between bars of the same location coordinate.
-    )
+    bargap=0.15,
+    bargroupgap=0.1
+)
 st.plotly_chart(fig4, theme="streamlit", use_container_width=True)
-    
-
 
 # Function to load validator data
 def get_validator_data():
@@ -151,45 +142,48 @@ def get_validator_data():
     validator_data = validator_response.json()
     return pd.DataFrame(validator_data.get('validators', []))
 
-# Visualize 7-day rolling average of empty block percentages for validators
+# Visualize validator data
 st.subheader("Top Validators: 7-Day Rolling Average Empty Block Percentage")
 st.text("")
-st.markdown("As the committee has highlighted in the last reports, we believe that a key indicator so far to look at performance of nodes is the number of empty blocks that they have proposed (i.e. number of blocks with no matches) compared to the otehr nodes.")
+st.markdown("As the committee has highlighted in the last reports, we believe that a key indicator so far to look at performance of nodes is the number of empty blocks that they have proposed (i.e. number of blocks with no matches) compared to the other nodes.")
 st.text("")
+
+# Load and process data
 df = pd.read_csv('empty_blocks.csv')
 validator_df = get_validator_data()
 df = df.merge(validator_df[['pubkey', 'moniker']], left_on='validator_moniker', right_on='pubkey', how='left')
 df['block_date'] = pd.to_datetime(df['block_date'])
 df['rolling_7day_avg_empty_block_pct'] = df.groupby('validator_moniker')['empty_block_pct'].transform(lambda x: x.rolling(window=7).mean() * 100)
 
-validator_chart_data = df[['block_date', 'rolling_7day_avg_empty_block_pct', 'moniker']].dropna()
-validator_chart_data_long = validator_chart_data.melt(
-    id_vars=["block_date"], 
-    value_vars=["rolling_7day_avg_empty_block_pct"], 
-    var_name="Metric", 
-    value_name="Percentage"
-)
+# Sort validators by their latest empty block percentage
+latest_empty_blocks = df.groupby('moniker').agg({
+    'block_date': 'max',
+    'rolling_7day_avg_empty_block_pct': 'last'
+}).sort_values('rolling_7day_avg_empty_block_pct', ascending=False)
 
-# Create the line chart using Plotly Express
+# Get top 10 validators by empty block percentage
+top_10_validators_empty = latest_empty_blocks.head(10).index.tolist()
+
+# Create the line chart for empty blocks
 fig5 = px.line(
-    validator_chart_data, 
+    df[df['moniker'].isin(top_10_validators_empty)], 
     x="block_date", 
     y="rolling_7day_avg_empty_block_pct", 
     color="moniker",
-    title="7-Day Rolling Average Empty Block Percentage by Validator",
+    title="7-Day Rolling Average Empty Block Percentage by Validator (Top 10)",
     labels={
         "block_date": "Block Date", 
         "rolling_7day_avg_empty_block_pct": "Empty Block Percentage (%)",
         "moniker": "Validator"
     },
-    color_discrete_sequence=px.colors.qualitative.Pastel
+    color_discrete_sequence=px.colors.qualitative.Pastel,
+    category_orders={"moniker": top_10_validators_empty}  # Order the legend based on sorted validators
 )
 
-# Customize the layout
 fig5.update_layout(
     xaxis_title="Date",
     yaxis_title="7-Day Rolling Average (%)",
-    legend_title="Validator",
+    legend_title="Validator (Sorted by Latest %)",
     xaxis_tickfont_size=12,
     yaxis_tickfont_size=12,
     margin=dict(l=40, r=40, t=40, b=40),
@@ -198,17 +192,7 @@ fig5.update_layout(
 
 st.plotly_chart(fig5, theme="streamlit", use_container_width=True)
 
-
-df_movingavg = pd.read_csv('mev_filtered_blocks_with_vp_date_new.csv')
-
-# Function to get sorted validators by their last moving average value
-def get_sorted_validators(df, column):
-    last_values = df.groupby('moniker').apply(lambda x: x.sort_values('date').iloc[-1][column])
-    sorted_validators = last_values.sort_values(ascending=False).index.tolist()
-    return sorted_validators
-
-# Sort validators by their last 7-day MA value
-# Load and process moving average data
+# Load and process MEV data
 df_movingavg = pd.read_csv('mev_filtered_blocks_with_vp_date_new.csv')
 
 st.subheader("Average 7-day Moving Average Order Book Discrepancy")
@@ -216,26 +200,35 @@ st.text("")
 st.markdown("This chart shows the 7-day moving average of order book discrepancy per block for each validator over time.")
 st.text("")
 
-# Create the line chart using Plotly Express
+# Sort validators by their latest MEV discrepancy
+latest_mev = df_movingavg.groupby('moniker').agg({
+    'date': 'max',
+    'mev_7day': 'last'
+}).sort_values('mev_7day', ascending=False)
+
+# Get top 10 validators by MEV discrepancy
+top_10_validators_mev = latest_mev.head(10).index.tolist()
+
+# Create the line chart for MEV data
 fig7 = px.line(
-    df_movingavg, 
+    df_movingavg[df_movingavg['moniker'].isin(top_10_validators_mev)], 
     x="date", 
     y="mev_7day",
     color="moniker",
-    title="7-day Moving Average Order Book Discrepancy per Block by Validator",
+    title="7-day Moving Average Order Book Discrepancy per Block by Validator (Top 10)",
     labels={
         "date": "Date",
         "mev_7day": "Order Book Discrepancy ($)",
         "moniker": "Validator"
     },
-    color_discrete_sequence=px.colors.qualitative.Pastel
+    color_discrete_sequence=px.colors.qualitative.Pastel,
+    category_orders={"moniker": top_10_validators_mev}  # Order the legend based on sorted validators
 )
 
-# Update layout to match other charts
 fig7.update_layout(
     xaxis_title="Date",
     yaxis_title="Order Book Discrepancy ($)",
-    legend_title="Validator",
+    legend_title="Validator (Sorted by Latest Discrepancy)",
     xaxis_tickfont_size=14,
     yaxis_tickfont_size=14,
     margin=dict(l=40, r=40, t=40, b=40),
@@ -251,14 +244,22 @@ st.text("")
 st.markdown("Compare selected validators' performance against the average of all other validators.")
 st.text("")
 
+# Calculate latest day's performance for each validator
+latest_date = df_movingavg['date'].max()
+latest_performance = df_movingavg[df_movingavg['date'] == latest_date]
+latest_avg = latest_performance['mev_7day'].mean()
+
+# Get validators performing above average on the latest day
+above_avg_validators = latest_performance[latest_performance['mev_7day'] > latest_avg]['moniker'].tolist()
+
 # Get unique validator names for the selector
 validators = sorted(df['moniker'].unique())
 
-# Create validator multiselector
+# Create validator multiselector with above-average validators as default
 selected_validators = st.multiselect(
     "Select validators to compare",
     validators,
-    default=[validators[0]]  # Set first validator as default selection
+    default=above_avg_validators
 )
 
 # Process empty blocks data for comparison
@@ -282,7 +283,7 @@ def prepare_mev_comparison(df, selected_validators):
     return selected_data, others_data
 
 # Prepare comparison data
-empty_blocks_selected, empty_blocks_others = prepare_empty_blocks_comparison(validator_chart_data, selected_validators)
+empty_blocks_selected, empty_blocks_others = prepare_empty_blocks_comparison(df, selected_validators)
 mev_selected, mev_others = prepare_mev_comparison(df_movingavg, selected_validators)
 
 # Create empty blocks comparison chart
