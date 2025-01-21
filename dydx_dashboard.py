@@ -20,8 +20,9 @@ def prepare_chart_data(x, y):
 # Function to load and preprocess MEV data
 def load_mev_data():  
     #url = "https://drive.google.com/uc?id=1f1pfLkNqbwiypDbyWZkHZO12D-_znYq0" 
-    url = "https://drive.google.com/uc?id=1V3eGS5dDcgWeaJuFe7LfhkCtsA19TUXP"
-    output = 'filtered_mev_data_with_dates_20250106.csv'
+    #url = "https://drive.google.com/uc?id=1V3eGS5dDcgWeaJuFe7LfhkCtsA19TUXP"
+    url = "https://drive.google.com/uc?id=1wUjaA2DkKWVTAGHTU7Lrg0vF3S2ukBcx"
+    output = 'filtered_mev_data_with_dates_20250121.csv'
     gdown.download(url, output, quiet=False)
     # Load into DataFrame
     mev_df = pd.read_csv(output)
