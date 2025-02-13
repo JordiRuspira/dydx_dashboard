@@ -25,16 +25,10 @@ def load_mev_data():
     
     if not os.path.exists(output):
         try:
-            # Use the original Dropbox link but add dl=1 parameter
             url = "https://www.dropbox.com/scl/fi/kudfhffizz3ofcmwa3em1/filtered_mev_data_with_dates_20250204_v2.csv?dl=1"
             response = requests.get(url)
             response.raise_for_status()
             
-            # Check if we got HTML instead of CSV
-            content = response.content.decode('utf-8')
-            if '<html' in content.lower():
-                raise Exception("Received HTML instead of CSV file")
-                
             with open(output, 'wb') as f:
                 f.write(response.content)
         except Exception as e:
@@ -44,23 +38,33 @@ def load_mev_data():
                 raise Exception(f"Cannot download file: {str(e)}")
     
     try:
-        # Try reading with explicit CSV parameters
+        # Read the CSV and print column names
         mev_df = pd.read_csv(output, 
                             encoding='utf-8',
-                            sep=',',  # explicit separator
-                            on_bad_lines='skip',  # skip problematic lines
-                            low_memory=False)  # avoid dtype issues
+                            sep=',',
+                            on_bad_lines='skip',
+                            low_memory=False)
+        
+        print("Available columns in the CSV:")
+        print(mev_df.columns.tolist())
+        
+        # Also print first few rows to see the data structure
+        print("\nFirst few rows of the data:")
+        print(mev_df.head())
+        
+        # Check if maybe the date column has a different name
+        date_like_columns = [col for col in mev_df.columns if 'date' in col.lower()]
+        if date_like_columns:
+            print("\nFound possible date columns:", date_like_columns)
+            
+        return mev_df
+        
     except Exception as e:
-        # If that fails, try to read the first few lines to diagnose
+        # If reading fails, try to see the raw file content
         with open(output, 'r', encoding='utf-8') as f:
             print("First few lines of file:")
-            print(f.read(500))  # print first 500 characters
+            print(f.read(500))
         raise Exception(f"Error reading CSV: {str(e)}")
-    
-    mev_df['date'] = pd.to_datetime(mev_df['date'], utc=True).dt.date
-    mev_df = mev_df.dropna(subset=['date'])
-    daily_aggregated = mev_df.groupby('date')['Order Book Discrepancy ($)'].sum().reset_index()
-    return daily_aggregated
 
 # Function to load and preprocess volume data
 def load_volume_data():
