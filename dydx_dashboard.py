@@ -25,8 +25,8 @@ def load_mev_data():
     
     if not os.path.exists(output):
         try:
-            # Convert Dropbox link to direct download link
-            url = "https://dl.dropboxusercontent.com/scl/fi/kudfhffizz3ofcmwa3em1/filtered_mev_data_with_dates_20250204_v2.csv"
+            # Use the original Dropbox link but add dl=1 parameter
+            url = "https://www.dropbox.com/scl/fi/kudfhffizz3ofcmwa3em1/filtered_mev_data_with_dates_20250204_v2.csv?dl=1"
             response = requests.get(url)
             response.raise_for_status()  # Raise an exception for bad status codes
             
