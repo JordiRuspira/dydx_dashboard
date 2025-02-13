@@ -241,7 +241,6 @@ st.subheader("Validator Comparison")
 st.text("")
 st.markdown("Compare selected validators' performance against the average of all other validators.")
 st.text("")
-
 # Calculate latest day's performance for each validator
 latest_date = df_movingavg['date'].max()
 latest_performance = df_movingavg[df_movingavg['date'] == latest_date]
@@ -250,16 +249,15 @@ latest_avg = latest_performance['mev_7day'].mean()
 # Get validators performing above average on the latest day
 above_avg_validators = latest_performance[latest_performance['mev_7day'] > latest_avg]['moniker'].tolist()
 
-# Get unique validator names for the selector
-validators = sorted(df['moniker'].unique())
+# Get unique validator names from df_movingavg instead of df
+validators = sorted(df_movingavg['moniker'].unique())
 
-# Create validator multiselector with above-average validators as default
+# Create validator multiselector
 selected_validators = st.multiselect(
     "Select validators to compare",
     validators,
     default=above_avg_validators
 )
-
 # Process empty blocks data for comparison
 def prepare_empty_blocks_comparison(df, selected_validators):
     # Selected validators data
