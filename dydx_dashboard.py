@@ -21,33 +21,8 @@ def prepare_chart_data(x, y):
 # Function to load and preprocess MEV data
 
 def load_mev_data():
-    output = 'filtered_mev_data_with_dates_20250204_v2.csv'
-    
-    if not os.path.exists(output):
-        try:
-            # Convert share link to direct download link
-            base_url = "https://www.dropbox.com/scl/fi/kudfhffizz3ofcmwa3em1/filtered_mev_data_with_dates_20250204_v2.csv"
-            url = f"{base_url}?dl=1"
-            
-            headers = {
-                'User-Agent': 'Mozilla/5.0',
-                'Accept': 'text/csv'
-            }
-            
-            response = requests.get(url, headers=headers)
-            response.raise_for_status()
-            
-            with open(output, 'wb') as f:
-                f.write(response.content)
-                
-        except Exception as e:
-            if os.path.exists(output):
-                pass
-            else:
-                raise Exception(f"Cannot download file: {str(e)}")
-    
-    # Load into DataFrame
-    mev_df = pd.read_csv(output)
+    # Simply read the local CSV file
+    mev_df = pd.read_csv('filtered_mev_data_with_dates_20250204_v2.csv')
     mev_df['date'] = pd.to_datetime(mev_df['date'], utc=True).dt.date
     mev_df = mev_df.dropna(subset=['date'])
     daily_aggregated = mev_df.groupby('date')['Order Book Discrepancy ($)'].sum().reset_index()
