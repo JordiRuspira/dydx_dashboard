@@ -18,13 +18,19 @@ def prepare_chart_data(x, y):
     return pd.DataFrame({'Date': x, 'Value': y}).set_index('Date')
 
 # Function to load and preprocess MEV data
-def load_mev_data():  
-    #url = "https://drive.google.com/uc?id=1f1pfLkNqbwiypDbyWZkHZO12D-_znYq0" 
-    #url = "https://drive.google.com/uc?id=1V3eGS5dDcgWeaJuFe7LfhkCtsA19TUXP"
-    #url = "https://drive.google.com/uc?id=1wUjaA2DkKWVTAGHTU7Lrg0vF3S2ukBcx"
-    url = "https://drive.google.com/uc?id=1TxnRSWKQBvdacr5EQQcAIe3oUEzMZfHq"
-    output = 'filtered_mev_data_with_dates_20250204.csv'
-    gdown.download(url, output, quiet=False)
+def load_mev_data():
+    output = 'filtered_mev_data_with_dates_20250204_v2.csv'
+    
+    # Check if file exists and is recent (e.g., less than 1 day old)
+    if not os.path.exists(output) or (time.time() - os.path.getmtime(output)) > 86400: 
+        url = "https://drive.google.com/uc?id=1SqEUCBRQRCbwy8Kr6znBUVRlGXpFBmPN"
+        try:
+            gdown.download(url, output, quiet=False)
+        except:
+            # If download fails, use existing file if available
+            if not os.path.exists(output):
+                raise Exception("Cannot download file and no local copy exists")
+    
     # Load into DataFrame
     mev_df = pd.read_csv(output)
     mev_df['date'] = pd.to_datetime(mev_df['date'], utc=True).dt.date
