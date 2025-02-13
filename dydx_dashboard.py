@@ -9,6 +9,7 @@ import matplotlib.dates as md
 import matplotlib.ticker as ticker
 import numpy as np
 import plotly.express as px
+import os
 
 
 blue_pastel_palette = ['#A2C3E6', '#B8D4EF', '#CDE3F5', '#E0F1FB', '#8FB3D9']
