@@ -25,10 +25,10 @@ def load_mev_data():
     
     if not os.path.exists(output):
         try:
-            # Properly formatted Dropbox direct download link
-            url = "https://www.dropbox.com/scl/fi/kudfhffizz3ofcmwa3em1/filtered_mev_data_with_dates_20250204_v2.csv?dl=1"
+            # Convert share link to direct download link
+            base_url = "https://www.dropbox.com/scl/fi/kudfhffizz3ofcmwa3em1/filtered_mev_data_with_dates_20250204_v2.csv"
+            url = f"{base_url}?dl=1"
             
-            # Add headers to ensure we get the file and not HTML
             headers = {
                 'User-Agent': 'Mozilla/5.0',
                 'Accept': 'text/csv'
@@ -37,12 +37,9 @@ def load_mev_data():
             response = requests.get(url, headers=headers)
             response.raise_for_status()
             
-            # Verify we got CSV content
-            if 'text/html' in response.headers.get('Content-Type', ''):
-                raise Exception("Received HTML instead of CSV")
-            
             with open(output, 'wb') as f:
                 f.write(response.content)
+                
         except Exception as e:
             if os.path.exists(output):
                 pass
