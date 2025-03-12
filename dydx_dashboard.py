@@ -22,7 +22,7 @@ def prepare_chart_data(x, y):
 
 def load_mev_data():
     # Simply read the local CSV file
-    mev_df = pd.read_csv('filtered_mev_data_with_dates_20250204_v2.csv')
+    mev_df = pd.read_csv('filtered_mev_data_with_dates.csv')
     mev_df['date'] = pd.to_datetime(mev_df['date'], utc=True).dt.date
     mev_df = mev_df.dropna(subset=['date'])
     daily_aggregated = mev_df.groupby('date')['Order Book Discrepancy ($)'].sum().reset_index()
